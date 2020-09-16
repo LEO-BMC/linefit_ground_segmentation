@@ -5,7 +5,9 @@ find_package(catkin_simple 0.1.0 REQUIRED )
 
 catkin_simple(ALL_DEPS_REQUIRED)
 
-add_definitions(-std=c++11 -g)
+set(CMAKE_CXX_STANDARD 11)
+
+SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -g3 -O3 -Wall")
 
 find_package(PCL REQUIRED)
 include_directories(${PCL_INCLUDE_DIRS})
