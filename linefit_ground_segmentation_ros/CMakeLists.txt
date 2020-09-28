@@ -27,5 +27,5 @@ cs_export()
 #############
 # QTCREATOR #
 #############
-FILE(GLOB_RECURSE LibFiles "include/*")
-add_custom_target(headers SOURCES ${LibFiles})
+FILE(GLOB_RECURSE LibFilesROS "include/*")
+add_custom_target(headersROS SOURCES ${LibFilesROS})
