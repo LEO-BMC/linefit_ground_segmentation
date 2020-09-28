@@ -3,11 +3,33 @@
 #include <pcl_ros/point_cloud.h>
 
 #include "ground_segmentation/ground_segmentation.h"
+#include <visualization_msgs/Marker.h>
+
+#include <pcl_conversions/pcl_conversions.h>
+#include <chrono>
+#include "ground_segmentation/helper.h"
+
+
 
 class SegmentationNode {
   ros::Publisher ground_pub_;
   ros::Publisher obstacle_pub_;
   GroundSegmentationParams params_;
+
+  ros::Publisher marker_grid_pub_;
+  ros::Publisher cluster_cloud_pub_;
+  ros::Publisher roi_cloud_pub_;
+  ros::Publisher deletedPoints_pub_;
+  ros::Publisher text_pub_1_;
+  ros::Publisher text_pub_2_;
+
+
+
+  Helper helper;
+
+  int call_back_id = 0;
+
+
 
 public:
   SegmentationNode(ros::NodeHandle& nh,
@@ -15,29 +37,105 @@ public:
                    const std::string& obstacle_topic,
                    const GroundSegmentationParams& params,
                    const bool& latch = false) : params_(params) {
-    ground_pub_ = nh.advertise<pcl::PointCloud<pcl::PointXYZ>>(ground_topic, 1, latch);
-    obstacle_pub_ = nh.advertise<pcl::PointCloud<pcl::PointXYZ>>(obstacle_topic, 1, latch);
+
+    ground_pub_ = nh.advertise<pcl::PointCloud<pcl::PointXYZI>>(ground_topic, 1, latch);
+    obstacle_pub_ = nh.advertise<pcl::PointCloud<pcl::PointXYZI>>(obstacle_topic, 1, latch);
+    marker_grid_pub_ = nh.advertise<visualization_msgs::Marker>("/Line_marker", 10);
+    cluster_cloud_pub_ = nh.advertise<pcl::PointCloud<pcl::PointXYZI>>("/cluster_cloud", 1, latch);
+    roi_cloud_pub_ =  nh.advertise<pcl::PointCloud<pcl::PointXYZI>>("/roi_cloud", 1, latch);
+    deletedPoints_pub_ =  nh.advertise<pcl::PointCloud<pcl::PointXYZI>>("/deleted_points_cloud", 1, latch);
+    text_pub_1_ = nh.advertise<visualization_msgs::Marker>("/callback_ID", 10);
+    text_pub_2_ = nh.advertise<visualization_msgs::Marker>("/inference_time", 10);
+
+
+
+
   }
 
-  void scanCallback(const pcl::PointCloud<pcl::PointXYZ>& cloud) {
+
+
+
+  void scanCallback(const sensor_msgs::PointCloud2ConstPtr& msg_cloud) {
+
+
+
+    cout << "Callback Id: " << call_back_id << endl;
+
+    std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+
+    pcl::PointCloud<pcl::PointXYZ> cloud;
+    pcl::fromROSMsg(*msg_cloud, cloud);
     GroundSegmentation segmenter(params_);
     std::vector<int> labels;
+    auto lines = segmenter.segment(cloud, &labels);
+    //lineMarkers(lines, msg_cloud);
 
-    segmenter.segment(cloud, &labels);
-    pcl::PointCloud<pcl::PointXYZ> ground_cloud, obstacle_cloud;
-    ground_cloud.header = cloud.header;
-    obstacle_cloud.header = cloud.header;
-    for (size_t i = 0; i < cloud.size(); ++i) {
-      if (labels[i] == 1) ground_cloud.push_back(cloud[i]);
-      else obstacle_cloud.push_back(cloud[i]);
-    }
-    ground_pub_.publish(ground_cloud);
-    obstacle_pub_.publish(obstacle_cloud);
+    auto clouds = helper.generateClouds(cloud, labels);
+    auto ground_cloud = clouds[0];
+    auto nonground_cloud = clouds[1];
+
+    auto clouds_ = helper.makeXYZI(ground_cloud, nonground_cloud);
+    auto  new_ground_cloud = clouds_[0];
+    auto new_nonground_cloud = clouds_[1];
+
+    // Deleting redundant non-ground points with grid mesh
+    pcl::PointCloud<pcl::PointXYZI>::Ptr redundant_cloud(new pcl::PointCloud<pcl::PointXYZI>);
+    helper.DetectRedundantPoints(redundant_cloud, new_ground_cloud, new_nonground_cloud, 65, -15, 3, -3, 48, 14,
+                                 5, cloud, marker_grid_pub_,
+                                 -4);
+
+    helper.deletePoints(new_nonground_cloud, redundant_cloud);
+    redundant_cloud->header = cloud.header;
+    deletedPoints_pub_.publish(redundant_cloud);
+    cout << "Redundant Cloud Size: " << redundant_cloud->points.size() << endl;
+
+    //new_nonground_cloud = helper.PassThrough(new_nonground_cloud, "z", 1000, -1.5);
+
+
+
+    /*
+     // Deleting redundant point with clustering
+    // ROI**********************************************
+    pcl::PointCloud<pcl::PointXYZI>::Ptr roi_cloud = helper.DefineROI(new_nonground_cloud);
+    roi_cloud->header = cloud.header;
+    roi_cloud_pub_.publish(roi_cloud);
+    // Clustering***************************************
+    pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_cluster = helper.Clustering(roi_cloud, new_nonground_cloud, 0.4, 1, 4);
+    // Publish******************************************
+    cloud_cluster->header = cloud.header;
+    cluster_cloud_pub_.publish(cloud_cluster);
+    */
+
+    // Publish Clouds
+    new_ground_cloud->header = cloud.header;
+    new_nonground_cloud->header = cloud.header;
+    ground_pub_.publish(new_ground_cloud);
+    obstacle_pub_.publish(new_nonground_cloud);
+
+    std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> fp_ms = end - start;
+    std::cout << "Calback time:  " << fp_ms.count() << "ms\n";
+
+
+    // Show Callback ID:
+    auto marker1 = helper.setTextMarker(to_string(call_back_id), cloud, 1, 18, 7, "");
+    text_pub_1_.publish(marker1);
+    auto marker2 = helper.setTextMarker(to_string(fp_ms.count()), cloud, 2, 16,7, "ms");
+    text_pub_2_.publish(marker2);
+
+
+    call_back_id++;
+    cout << "****************************************" << endl;
+    //ros::Duration(1.5).sleep();
+
   }
 };
 
+
+
+
 int main(int argc, char** argv) {
-  ros::init(argc, argv, "segmenter");
+  ros::init(argc, argv, "ground_segmentation");
   google::InitGoogleLogging(argv[0]);
 
   ros::NodeHandle nh("~");
@@ -55,6 +153,8 @@ int main(int argc, char** argv) {
   nh.param("sensor_height", params.sensor_height, params.sensor_height);
   nh.param("line_search_angle", params.line_search_angle, params.line_search_angle);
   nh.param("n_threads", params.n_threads, params.n_threads);
+
+
   // Params that need to be squared.
   double r_min, r_max, max_fit_error;
   if (nh.getParam("r_min", r_min)) {

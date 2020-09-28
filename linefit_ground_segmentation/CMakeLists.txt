@@ -14,6 +14,25 @@ include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
+
+#find_package(catkin REQUIRED COMPONENTS
+#        geometry_msgs
+#        sensor_msgs
+#        pcl_conversions
+#        pcl_ros
+#        sensor_msgs
+#        roscpp
+#        rospy   
+#        )
+        
+#find_package(catkin REQUIRED)
+#include_directories(
+#        include
+#        ${catkin_INCLUDE_DIRS} 
+#)
+#link_directories(${catkin_LIBRARIES})
+
+
 find_package(Eigen3 REQUIRED)
 include_directories(${Eigen_INCLUDE_DIRS})
 

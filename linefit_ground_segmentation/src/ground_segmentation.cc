@@ -5,6 +5,7 @@
 #include <list>
 #include <memory>
 #include <thread>
+using namespace std;
 
 void GroundSegmentation::visualizePointCloud(const PointCloud::ConstPtr& cloud,
                                              const std::string& id) {
@@ -57,16 +58,47 @@ GroundSegmentation::GroundSegmentation(const GroundSegmentationParams& params) :
   if (params.visualize) viewer_ = std::make_shared<pcl::visualization::PCLVisualizer>("3D Viewer");
 }
 
-void GroundSegmentation::segment(const PointCloud& cloud, std::vector<int>* segmentation) {
+std::vector<vector<float>> GroundSegmentation::segment(const PointCloud& cloud, std::vector<int>* segmentation) {
+
+  
   std::cout << "Segmenting cloud with " << cloud.size() << " points...\n";
   std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
   segmentation->clear();
   segmentation->resize(cloud.size(), 0);
   bin_index_.resize(cloud.size());
   segment_coordinates_.resize(cloud.size());
+  std::list<PointLine> lines;
 
   insertPoints(cloud);
-  std::list<PointLine> lines;
+
+  std::vector<vector<float>> lines_;
+  /*
+  getLines(&lines);
+
+  std::vector<float> line;
+
+
+  for (auto it = lines.begin(); it != lines.end(); ++it) {
+    float x1 = it->first.x;
+    float y1 = it->first.y;
+    float z1 = it->first.z;
+    float x2 = it->second.x;
+    float y2 = it->second.y;
+    float z2 = it->second.z;
+    line.push_back(x1); 
+    line.push_back(y1); 
+    line.push_back(z1); 
+    line.push_back(x2); 
+    line.push_back(y2); 
+    line.push_back(z2);
+    lines_.push_back(line);
+    
+  }
+
+  cout << "Line count: " << lines_.size() << endl;
+
+*/
+
   if (params_.visualize) {
     getLines(&lines);
   }
@@ -91,6 +123,7 @@ void GroundSegmentation::segment(const PointCloud& cloud, std::vector<int>* segm
   std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double, std::milli> fp_ms = end - start;
   std::cout << "Done! Took " << fp_ms.count() << "ms\n";
+  return lines_;
 }
 
 void GroundSegmentation::getLines(std::list<PointLine> *lines) {
@@ -252,7 +285,8 @@ void GroundSegmentation::insertPoints(const PointCloud& cloud) {
 
 void GroundSegmentation::insertionThread(const PointCloud& cloud,
                                          const size_t start_index,
-                                         const size_t end_index) {
+                                         const size_t end_index) 
+                                         {
   const double segment_step = 2*M_PI / params_.n_segments;
   const double bin_step = (sqrt(params_.r_max_square) - sqrt(params_.r_min_square))
       / params_.n_bins;

@@ -7,7 +7,7 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/visualization/pcl_visualizer.h>
-
+using namespace std;
 #include "ground_segmentation/segment.h"
 
 struct GroundSegmentationParams {
@@ -111,7 +111,7 @@ public:
 
   GroundSegmentation(const GroundSegmentationParams& params = GroundSegmentationParams());
 
-  void segment(const PointCloud& cloud, std::vector<int>* segmentation);
+  std::vector<vector<float>> segment(const PointCloud& cloud, std::vector<int>* segmentation);
 
 };
 
