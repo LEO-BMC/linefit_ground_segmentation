@@ -37,7 +37,7 @@ public:
 };
 
 int main(int argc, char** argv) {
-  ros::init(argc, argv, "ground_segmentation");
+  ros::init(argc, argv, "segmenter");
   google::InitGoogleLogging(argv[0]);
 
   ros::NodeHandle nh("~");
