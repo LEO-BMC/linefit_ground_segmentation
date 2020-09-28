@@ -205,6 +205,7 @@ void DetectRedundantPoints(pcl::PointCloud<pcl::PointXYZI>::Ptr& deletedPoints, 
                 if(condition_1 || condition_2){
                     *deletedPoints = *deletedPoints + *mesh_nonground;
                 }
+
                 //******************************************************************************************************
 
             }

@@ -8,7 +8,7 @@ n_segments: 600         # number of radial segments. "700" "düşünce nonground
 max_dist_to_line: 0.5  # maximum vertical distance of point to line to be considered ground. "1" "artarsa ground artar". değişim etkisi her arazide fazla.
 
 sensor_height: 2.83      # sensor height above ground.
-max_slope: 0.45         # maximum slope of a ground line. "0.3"
+max_slope: 0.50         # maximum slope of a ground line. "0.3"
 max_fit_error: 0.1    # maximum error of a point during line fit. "0.99" "0.03"
 long_threshold: 200.0     # distance between points after which they are considered far from each other. "200"
 max_long_height: 1.0    # maximum height change to previous point in long line. "201"
@@ -18,3 +18,6 @@ line_search_angle: 0.99  # how far to search in angular direction to find a line
 
 latch: false            # latch output topics or not
 visualize: false        # visualize segmentation result - USE ONLY FOR DEBUGGING
+
+min_point_count_threshold: 5
+center_of_gravity_threshold: -4.0
