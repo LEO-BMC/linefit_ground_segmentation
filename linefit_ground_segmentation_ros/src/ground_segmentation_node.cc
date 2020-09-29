@@ -10,6 +10,13 @@
 #include "ground_segmentation/helper.h"
 
 
+// In order to multi message in a single callback function:
+#include <message_filters/subscriber.h>
+#include <message_filters/time_synchronizer.h>
+#include <sensor_msgs/PointCloud2.h>
+#include <geometry_msgs/TwistStamped.h>
+//*********************************************************
+
 
 class SegmentationNode {
   ros::Publisher ground_pub_;
@@ -33,6 +40,8 @@ class SegmentationNode {
   float mesh_x_end;
   float mesh_y_start;
   float mesh_y_end;
+
+
 
 
 
@@ -63,12 +72,10 @@ public:
 
   }
 
-
+void callback(){}
 
 
   void scanCallback(const sensor_msgs::PointCloud2ConstPtr& msg_cloud) {
-
-
 
     cout << "Callback Id: " << call_back_id << endl;
 
@@ -175,7 +182,6 @@ int main(int argc, char** argv) {
   nh.param("mesh_y_end", params.mesh_y_end, params.mesh_y_end);
 
 
-
   // Params that need to be squared.
   double r_min, r_max, max_fit_error;
   if (nh.getParam("r_min", r_min)) {
@@ -196,6 +202,18 @@ int main(int argc, char** argv) {
   nh.param("latch", latch, false);
 
   // Start node.
+  
+  /*
+  message_filters::Subscriber<sensor_msgs::PointCloud2ConstPtr> cloud_sub(nh, "/cloud_stitched", 1);
+  message_filters::Subscriber<geometry_msgs::TwistStampedConstPtr> velocity_sub(nh, "/current_velocity", 1);
+  message_filters::TimeSynchronizer<sensor_msgs::PointCloud2ConstPtr , geometry_msgs::TwistStampedConstPtr> sync(cloud_sub, velocity_sub, 10);
+  sync.registerCallback(boost::bind(&SegmentationNode::callback, _1, _2));
+  */
+
+
+
+
+
   SegmentationNode node(nh, ground_topic, obstacle_topic, params, latch);
   ros::Subscriber cloud_sub;
   cloud_sub = nh.subscribe(input_topic, 1, &SegmentationNode::scanCallback, &node);
