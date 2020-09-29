@@ -27,7 +27,13 @@ struct GroundSegmentationParams {
       sensor_height(0.2),
       line_search_angle(0.2),
       min_point_count_threshold(4),
-      center_of_gravity_threshold(-4.0){}
+      center_of_gravity_threshold(-4.0),
+      horizontal_step(1.6),
+      vertical_step(0.4),
+      mesh_x_start(65),
+      mesh_x_end(-15),
+      mesh_y_start(3),
+      mesh_y_end(-3) {}
 
   // Visualize estimated ground.
   bool visualize;
@@ -60,6 +66,12 @@ struct GroundSegmentationParams {
   //Extra parameters:
   int min_point_count_threshold;
   float center_of_gravity_threshold;
+  float horizontal_step;
+  float vertical_step;
+  float mesh_x_start;
+  float mesh_x_end;
+  float mesh_y_start;
+  float mesh_y_end;
 };
 
 typedef pcl::PointCloud<pcl::PointXYZ> PointCloud;

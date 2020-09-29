@@ -15,9 +15,14 @@ max_long_height: 1.0    # maximum height change to previous point in long line. 
 max_start_height: 20.0   # maximum difference to estimated ground height to start a new line. "90"
 line_search_angle: 0.99  # how far to search in angular direction to find a line [rad]. "0.99"
 
-
 latch: false            # latch output topics or not
 visualize: false        # visualize segmentation result - USE ONLY FOR DEBUGGING
 
 min_point_count_threshold: 5
-center_of_gravity_threshold: -4.0
+center_of_gravity_threshold: -2.5
+horizontal_step: 1.6
+vertical_step: 0.4
+mesh_x_start: 65
+mesh_x_end: -15
+mesh_y_start: 3
+mesh_y_end: -3

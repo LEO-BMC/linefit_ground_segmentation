@@ -27,6 +27,12 @@ class SegmentationNode {
   int call_back_id = 0;
   int min_point_count_threshold;
   float center_of_gravity_threshold;
+  float horizontal_step;
+  float vertical_step;
+  float mesh_x_start;
+  float mesh_x_end;
+  float mesh_y_start;
+  float mesh_y_end;
 
 
 
@@ -48,9 +54,12 @@ public:
 
     min_point_count_threshold = params.min_point_count_threshold;
     center_of_gravity_threshold = params.center_of_gravity_threshold;
-
-
-
+    horizontal_step = params.horizontal_step;
+    vertical_step = params.vertical_step;
+    mesh_x_start = params.mesh_x_start;
+    mesh_x_end = params.mesh_x_end;
+    mesh_y_start = params.mesh_y_start;
+    mesh_y_end = params.mesh_y_end;
 
   }
 
@@ -59,8 +68,7 @@ public:
 
   void scanCallback(const sensor_msgs::PointCloud2ConstPtr& msg_cloud) {
 
-    cout << "min_point_count_threshold: " << min_point_count_threshold << endl;
-    cout <<"center_of_gravity_threshold: " << center_of_gravity_threshold << endl;
+
 
     cout << "Callback Id: " << call_back_id << endl;
 
@@ -83,7 +91,8 @@ public:
 
     // Deleting redundant non-ground points with grid mesh
     pcl::PointCloud<pcl::PointXYZI>::Ptr redundant_cloud(new pcl::PointCloud<pcl::PointXYZI>);
-    helper.DetectRedundantPoints(redundant_cloud, new_ground_cloud, new_nonground_cloud, 65, -15, 3, -3, 48, 14,
+    helper.DetectRedundantPoints(redundant_cloud, new_ground_cloud, new_nonground_cloud,
+                                 65, -15, 3, -3, horizontal_step, vertical_step,
                                  min_point_count_threshold, cloud, marker_grid_pub_,
                                  center_of_gravity_threshold);
 
@@ -94,8 +103,6 @@ public:
 
 
     //new_nonground_cloud = helper.PassThrough(new_nonground_cloud, "z", 1000, -1.5);
-
-
 
     /*
      // Deleting redundant point with clustering
@@ -157,8 +164,16 @@ int main(int argc, char** argv) {
   nh.param("sensor_height", params.sensor_height, params.sensor_height);
   nh.param("line_search_angle", params.line_search_angle, params.line_search_angle);
   nh.param("n_threads", params.n_threads, params.n_threads);
+  // Extra parameters:
   nh.param("min_point_count_threshold", params.min_point_count_threshold, params.min_point_count_threshold);
   nh.param("center_of_gravity_threshold", params.center_of_gravity_threshold, params.center_of_gravity_threshold);
+  nh.param("horizontal_step", params.horizontal_step, params.horizontal_step);
+  nh.param("vertical_step", params.vertical_step, params.vertical_step);
+  nh.param("mesh_x_start", params.mesh_x_start, params.mesh_x_start);
+  nh.param("mesh_x_end", params.mesh_x_end, params.mesh_x_end);
+  nh.param("mesh_y_start", params.mesh_y_start, params.mesh_y_start);
+  nh.param("mesh_y_end", params.mesh_y_end, params.mesh_y_end);
+
 
 
   // Params that need to be squared.

@@ -135,9 +135,10 @@ visualization_msgs::Marker setTextMarker(string text, pcl::PointCloud<pcl::Point
 
   }
 
-void DetectRedundantPoints(pcl::PointCloud<pcl::PointXYZI>::Ptr& deletedPoints, pcl::PointCloud<pcl::PointXYZI>::Ptr new_ground_cloud, pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, float x_start, float x_end, float y_start, float y_end, float n_x, float n_y,
-                                                           int threshold, pcl::PointCloud<pcl::PointXYZ> cloud_for_frame, ros::Publisher marker_pub_,
-                                                           float center_of_gravity_threshold)
+void DetectRedundantPoints(pcl::PointCloud<pcl::PointXYZI>::Ptr& deletedPoints, pcl::PointCloud<pcl::PointXYZI>::Ptr new_ground_cloud, pcl::PointCloud<pcl::PointXYZI>::Ptr cloud,
+                           float x_start, float x_end, float y_start, float y_end, float horizontal_step, float vertical_step,
+                           int threshold, pcl::PointCloud<pcl::PointXYZ> cloud_for_frame, ros::Publisher marker_pub_,
+                           float center_of_gravity_threshold)
     {
         pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_ROI = PassThrough(cloud, "x", x_start, x_end);
         cloud_ROI = PassThrough(cloud_ROI, "y", y_start, y_end);
@@ -147,8 +148,13 @@ void DetectRedundantPoints(pcl::PointCloud<pcl::PointXYZI>::Ptr& deletedPoints, 
 
         vertical_lines.push_back(y_start);
 
-        float horizontal_step = (x_start-x_end)/n_x;
-        float vertical_step = (y_start-y_end)/n_y;
+        //float horizontal_step = (x_start-x_end)/n_x;
+        //float vertical_step = (y_start-y_end)/n_y;
+
+        //float horizontal_step = 1.6;
+        //float vertical_step = 0.4;
+
+
 
         cout << "Horizontal step: " << horizontal_step << " Vertical step: " << vertical_step << endl;
 
