@@ -9,15 +9,6 @@
 #include <chrono>
 #include "ground_segmentation/helper.h"
 
-
-// In order to multi message in a single callback function:
-#include <message_filters/subscriber.h>
-#include <message_filters/time_synchronizer.h>
-#include <sensor_msgs/PointCloud2.h>
-#include <geometry_msgs/TwistStamped.h>
-//*********************************************************
-
-
 class SegmentationNode {
   ros::Publisher ground_pub_;
   ros::Publisher obstacle_pub_;
@@ -42,9 +33,6 @@ class SegmentationNode {
   float mesh_y_end;
 
 
-
-
-
 public:
   SegmentationNode(ros::NodeHandle& nh,
                    const std::string& ground_topic,
@@ -65,6 +53,7 @@ public:
     center_of_gravity_threshold = params.center_of_gravity_threshold;
     horizontal_step = params.horizontal_step;
     vertical_step = params.vertical_step;
+
     mesh_x_start = params.mesh_x_start;
     mesh_x_end = params.mesh_x_end;
     mesh_y_start = params.mesh_y_start;
@@ -72,7 +61,7 @@ public:
 
   }
 
-void callback(){}
+
 
 
   void scanCallback(const sensor_msgs::PointCloud2ConstPtr& msg_cloud) {
@@ -98,10 +87,11 @@ void callback(){}
 
     // Deleting redundant non-ground points with grid mesh
     pcl::PointCloud<pcl::PointXYZI>::Ptr redundant_cloud(new pcl::PointCloud<pcl::PointXYZI>);
-    helper.DetectRedundantPoints(redundant_cloud, new_ground_cloud, new_nonground_cloud,
-                                 65, -15, 3, -3, horizontal_step, vertical_step,
+    helper.DetectRedundantPoints(redundant_cloud, new_nonground_cloud,
+                                 mesh_x_start, mesh_x_end, mesh_y_start, mesh_y_end, horizontal_step, vertical_step,
                                  min_point_count_threshold, cloud, marker_grid_pub_,
                                  center_of_gravity_threshold);
+
 
     helper.deletePoints(new_nonground_cloud, redundant_cloud);
     redundant_cloud->header = cloud.header;
@@ -143,13 +133,11 @@ void callback(){}
 
 
     call_back_id++;
-    cout << "****************************************" << endl;
+    cout << "******************************************************" << endl;
     //ros::Duration(1.5).sleep();
 
   }
 };
-
-
 
 
 int main(int argc, char** argv) {
@@ -202,18 +190,6 @@ int main(int argc, char** argv) {
   nh.param("latch", latch, false);
 
   // Start node.
-  
-  /*
-  message_filters::Subscriber<sensor_msgs::PointCloud2ConstPtr> cloud_sub(nh, "/cloud_stitched", 1);
-  message_filters::Subscriber<geometry_msgs::TwistStampedConstPtr> velocity_sub(nh, "/current_velocity", 1);
-  message_filters::TimeSynchronizer<sensor_msgs::PointCloud2ConstPtr , geometry_msgs::TwistStampedConstPtr> sync(cloud_sub, velocity_sub, 10);
-  sync.registerCallback(boost::bind(&SegmentationNode::callback, _1, _2));
-  */
-
-
-
-
-
   SegmentationNode node(nh, ground_topic, obstacle_topic, params, latch);
   ros::Subscriber cloud_sub;
   cloud_sub = nh.subscribe(input_topic, 1, &SegmentationNode::scanCallback, &node);

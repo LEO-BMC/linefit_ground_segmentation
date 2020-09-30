@@ -41,6 +41,9 @@
 
 #include <pcl_conversions/pcl_conversions.h>
 
+#include <iostream>
+#include <iomanip>
+
 using namespace std;
 
 class Helper{
@@ -135,7 +138,7 @@ visualization_msgs::Marker setTextMarker(string text, pcl::PointCloud<pcl::Point
 
   }
 
-void DetectRedundantPoints(pcl::PointCloud<pcl::PointXYZI>::Ptr& deletedPoints, pcl::PointCloud<pcl::PointXYZI>::Ptr new_ground_cloud, pcl::PointCloud<pcl::PointXYZI>::Ptr cloud,
+void DetectRedundantPoints(pcl::PointCloud<pcl::PointXYZI>::Ptr& deletedPoints, pcl::PointCloud<pcl::PointXYZI>::Ptr cloud,
                            float x_start, float x_end, float y_start, float y_end, float horizontal_step, float vertical_step,
                            int threshold, pcl::PointCloud<pcl::PointXYZ> cloud_for_frame, ros::Publisher marker_pub_,
                            float center_of_gravity_threshold)
@@ -193,8 +196,9 @@ void DetectRedundantPoints(pcl::PointCloud<pcl::PointXYZI>::Ptr& deletedPoints, 
                 pcl::PointCloud<pcl::PointXYZI>::Ptr mesh_nonground = PassThrough(cloud_ROI, "x", x_start, x_end);
                 mesh_nonground = PassThrough(mesh_nonground, "y", y_start, y_end);
                 int mesh_point_count = mesh_nonground->points.size();
-                grids_nonground.push_back(mesh_nonground);
+                //grids_nonground.push_back(mesh_nonground);
                 float average;
+
                 if(mesh_point_count != 0){
                     cout << "Mesh id: " << mesh_id << " | Mesh size: " << mesh_point_count << endl;
                     float sum = 0;
@@ -202,6 +206,13 @@ void DetectRedundantPoints(pcl::PointCloud<pcl::PointXYZI>::Ptr& deletedPoints, 
                         sum = sum + mesh_nonground->points[i].z;
                     average = sum/float(mesh_point_count);
                     cout << "Average z of points in mesh: " << to_string(average) << endl;
+
+                    // Calculate min z:
+                    std::vector<float> z_values;
+                    for(int j=0; j<mesh_nonground->points.size(); j++)
+                        z_values.push_back(mesh_nonground->points[i].z);
+                    //printVector(z_values);
+                    //cout << "*****" << endl;
                 }
                 mesh_id++;
                 // Condition in order to delete redundant points
@@ -241,7 +252,7 @@ pcl::PointCloud<pcl::PointXYZI>::Ptr PassThrough(pcl::PointCloud<pcl::PointXYZI>
 void printVector(std::vector<float> vector){
       for(int i=0; i<vector.size(); i++)
           cout << vector[i] << " ";
-      cout << "\n********************************" << endl;
+      cout << endl;
   }
 
 
@@ -353,7 +364,7 @@ visualization_msgs::Marker visualizeGrid(std::vector<float> horizontal_lines, st
     line_list.pose.orientation.w = 1.0;
     line_list.id = 0;
     line_list.type = visualization_msgs::Marker::LINE_LIST;
-    line_list.scale.x = 0.01;
+    line_list.scale.x = 0.03;
     // Line list is red
     line_list.color.r = 1.0;
     line_list.color.a = 1.0;
@@ -365,10 +376,10 @@ visualization_msgs::Marker visualizeGrid(std::vector<float> horizontal_lines, st
         geometry_msgs::Point p;
         p.x = horizontal_lines[i];
         p.y = y_start;
-        p.z = -2.3;
+        p.z = -2.8;
 
         line_list.points.push_back(p);
-        p.z = -2.3;
+        p.z = -2.8;
         p.x = horizontal_lines[i];
         p.y = y_end;
         line_list.points.push_back(p);
@@ -379,10 +390,10 @@ visualization_msgs::Marker visualizeGrid(std::vector<float> horizontal_lines, st
         geometry_msgs::Point p;
         p.x = x_start;
         p.y = vertical_lines[i];
-        p.z = -2.3;
+        p.z = -2.8;
 
         line_list.points.push_back(p);
-        p.z = -2.3;
+        p.z = -2.8;
         p.x = x_end;
         p.y = vertical_lines[i];
         line_list.points.push_back(p);
