@@ -1,10 +1,8 @@
 n_threads: 10        # number of threads to use. "12"
-
 r_min: 0.1             # minimum point distance. "1.1" artartsa nonground artar.
 r_max: 350               # maximum point distance. "350"
 n_bins: 500            # number of radial bins. "düşünce nonground artar" "360". düz arazide değişim etkisi az.
 n_segments: 600         # number of radial segments. "700" "düşünce nonground artart". düz arazide değişim etkisi az.
-
 sensor_height: 2.83      # sensor height above ground.
 max_slope: 0.50         # maximum slope of a ground line. "0.3"
 max_fit_error: 0.1    # maximum error of a point during line fit. "0.99" "0.03"
@@ -12,16 +10,16 @@ long_threshold: 200.0     # distance between points after which they are conside
 max_long_height: 1.0    # maximum height change to previous point in long line. "201"
 max_start_height: 20.0   # maximum difference to estimated ground height to start a new line. "90"
 line_search_angle: 0.99  # how far to search in angular direction to find a line [rad]. "0.99"
-
 latch: false            # latch output topics or not
 visualize: false        # visualize segmentation result - USE ONLY FOR DEBUGGING
-
+#**************************************
 max_dist_to_line: 0.4
-min_point_count_threshold: 5
+min_point_count_threshold: 6
 center_of_gravity_threshold: -4
-horizontal_step: 1.6
-vertical_step: 0.4
-mesh_x_start: 40
-mesh_x_end: -10
-mesh_y_start: 10  #3
-mesh_y_end: -10 #-3
+horizontal_step: 3.5
+vertical_step: 1.3
+mesh_x_start: 50
+mesh_x_end: -20
+mesh_y_start: 14  #3
+mesh_y_end: -14 #-3
+#**************************************

@@ -22,7 +22,7 @@ class SegmentationNode {
   ros::Publisher text_pub_2_;
 
   Helper helper;
-  int call_back_id = 0;
+  double call_back_id = 0;
   int min_point_count_threshold;
   float center_of_gravity_threshold;
   float horizontal_step;
@@ -31,6 +31,10 @@ class SegmentationNode {
   float mesh_x_end;
   float mesh_y_start;
   float mesh_y_end;
+
+  double total_time = 0;
+
+  ros::Publisher new_nonground_pub_;
 
 
 public:
@@ -59,13 +63,14 @@ public:
     mesh_y_start = params.mesh_y_start;
     mesh_y_end = params.mesh_y_end;
 
+    new_nonground_pub_ = nh.advertise<pcl::PointCloud<pcl::PointXYZI>>("/notProcessedNonground", 1, latch);
+
   }
-
-
 
 
   void scanCallback(const sensor_msgs::PointCloud2ConstPtr& msg_cloud) {
 
+      cout << "Mesh y_start: " << mesh_y_start << endl;
     cout << "Callback Id: " << call_back_id << endl;
 
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
@@ -84,6 +89,9 @@ public:
     auto clouds_ = helper.makeXYZI(ground_cloud, nonground_cloud);
     auto  new_ground_cloud = clouds_[0];
     auto new_nonground_cloud = clouds_[1];
+
+    new_nonground_cloud->header = cloud.header;
+    new_nonground_pub_.publish(new_nonground_cloud);
 
     // Deleting redundant non-ground points with grid mesh
     pcl::PointCloud<pcl::PointXYZI>::Ptr redundant_cloud(new pcl::PointCloud<pcl::PointXYZI>);
@@ -124,6 +132,10 @@ public:
     std::chrono::duration<double, std::milli> fp_ms = end - start;
     std::cout << "Calback time:  " << fp_ms.count() << "ms\n";
 
+    total_time += fp_ms.count();
+    call_back_id++;
+    cout << "Average time: " << total_time/call_back_id << endl;
+
 
     // Show Callback ID:
     auto marker1 = helper.setTextMarker(to_string(call_back_id), cloud, 1, 18, 7, "");
@@ -131,10 +143,16 @@ public:
     auto marker2 = helper.setTextMarker(to_string(fp_ms.count()), cloud, 2, 16,7, "ms");
     text_pub_2_.publish(marker2);
 
-
-    call_back_id++;
+    // Set the y_start and y_and according to inference time:
+    if(fp_ms.count()>80){
+        mesh_y_start = 3;
+        mesh_y_end = -3;
+    }else{
+        mesh_y_start = 14;
+        mesh_y_end = -14;
+    }
     cout << "*****************************************************" << endl;
-    //ros::Duration(1.5).sleep();
+
 
   }
 };

@@ -199,7 +199,7 @@ void DetectRedundantPoints(pcl::PointCloud<pcl::PointXYZI>::Ptr& deletedPoints, 
                 //grids_nonground.push_back(mesh_nonground);
                 float average;
 
-                if(mesh_point_count != 0){
+                if(mesh_point_count != 0 && mesh_id<39){
                     cout << "Mesh id: " << mesh_id << " | Mesh size: " << mesh_point_count << endl;
                     float sum = 0;
                     for(int i=0; i<mesh_nonground->points.size(); i++)
