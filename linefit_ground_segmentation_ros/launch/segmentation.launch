@@ -5,7 +5,8 @@
   <!-- Ground segmentation -->
   <node name="segmenter" pkg="linefit_ground_segmentation_ros" type="ground_segmentation_node" output="screen">
     <rosparam command="load" file="$(find linefit_ground_segmentation_ros)/launch/segmentation_params.yaml"/>
-    <param name="input_topic" value="/cloud_stitched" />
+<!--    <param name="input_topic" value="/cloud_stitched" />-->
+    <param name="input_topic" value="/downsampled_for_ground_remover/filtered_points" />
     <param name="ground_output_topic" value="points_ground" />
     <param name="obstacle_output_topic" value="points_nonground" />
   </node>
