@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include <pcl/io/ply_io.h>
 #include <pcl_ros/point_cloud.h>
+#include <std_msgs/Int8.h>
 
 #include "ground_segmentation/ground_segmentation.h"
 
@@ -33,6 +34,13 @@ public:
     }
     ground_pub_.publish(ground_cloud);
     obstacle_pub_.publish(obstacle_cloud);
+  }
+
+  static void SoftwareHealthCheckerCallback(const ros::Publisher& publisher) {
+    std_msgs::Int8 health_message;
+    health_message.data = 1;
+    publisher.publish(health_message);
+
   }
 };
 
@@ -78,5 +86,20 @@ int main(int argc, char** argv) {
   SegmentationNode node(nh, ground_topic, obstacle_topic, params, latch);
   ros::Subscriber cloud_sub;
   cloud_sub = nh.subscribe(input_topic, 1, &SegmentationNode::scanCallback, &node);
+
+
+  ros::Publisher pub_health_checker_ = nh.advertise<std_msgs::Int8>(
+    "/frustum_projector/health_message",
+    1);
+
+  ros::Timer timer_ =  nh.createTimer(
+    ros::Duration(0.2),
+    boost::bind(
+      (void(*)(ros::Publisher&))&SegmentationNode::SoftwareHealthCheckerCallback,
+      pub_health_checker_
+    ),
+    false,
+    true
+  );
   ros::spin();
 }
