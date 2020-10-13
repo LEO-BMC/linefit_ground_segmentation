@@ -111,7 +111,7 @@ public:
 
   GroundSegmentation(const GroundSegmentationParams& params = GroundSegmentationParams());
 
-  void segment(const PointCloud& cloud, std::vector<int>* segmentation);
+  void segment(const pcl::PointCloud<pcl::PointXYZ>& cloud, std::vector<int>* segmentation);
 
 };
 

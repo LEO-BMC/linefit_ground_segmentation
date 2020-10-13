@@ -57,7 +57,8 @@ GroundSegmentation::GroundSegmentation(const GroundSegmentationParams& params) :
   if (params.visualize) viewer_ = std::make_shared<pcl::visualization::PCLVisualizer>("3D Viewer");
 }
 
-void GroundSegmentation::segment(const PointCloud& cloud, std::vector<int>* segmentation) {
+void GroundSegmentation::segment(const pcl::PointCloud<pcl::PointXYZ>& cloud, std::vector<int>* segmentation) {
+  std::cout << "aaaa: " <<  std::endl;
   std::cout << "Segmenting cloud with " << cloud.size() << " points...\n";
   std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
   segmentation->clear();

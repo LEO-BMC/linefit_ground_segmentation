@@ -12,5 +12,4 @@ max_start_height: 20.0   # maximum difference to estimated ground height to star
 line_search_angle: 0.99  # how far to search in angular direction to find a line [rad]. "0.99"
 latch: false            # latch output topics or not
 visualize: false        # visualize segmentation result - USE ONLY FOR DEBUGGING
-
-max_dist_to_line: 0.4
+max_dist_to_line: 0.60

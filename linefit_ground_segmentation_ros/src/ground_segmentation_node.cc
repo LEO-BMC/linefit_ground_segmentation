@@ -20,7 +20,13 @@ public:
     obstacle_pub_ = nh.advertise<pcl::PointCloud<pcl::PointXYZ>>(obstacle_topic, 1, latch);
   }
 
-  void scanCallback(const pcl::PointCloud<pcl::PointXYZ>& cloud) {
+  void scanCallback(const sensor_msgs::PointCloud2ConstPtr& msg_cloud_in) {
+//    pcl::PointCloud<pcl::PointXYZ>
+    pcl::PointCloud<pcl::PointXYZ> cloud;
+
+    pcl::fromROSMsg(*msg_cloud_in, cloud);
+    std::cout << "Cloud size : " << cloud.size() << std::endl;
+
     GroundSegmentation segmenter(params_);
     std::vector<int> labels;
 
@@ -89,7 +95,7 @@ int main(int argc, char** argv) {
 
 
   ros::Publisher pub_health_checker_ = nh.advertise<std_msgs::Int8>(
-    "/frustum_projector/health_message",
+    "/ground_remover/health_message",
     1);
 
   ros::Timer timer_ =  nh.createTimer(
