@@ -5,6 +5,15 @@
 
 #include "ground_segmentation/ground_segmentation.h"
 
+#include <signal.h>
+const std::string name_node = "segmenter";
+
+void SigHandler(int sig) {
+  std::cerr << name_node + " died with #" + std::to_string(sig) << " - " << strsignal(sig) << std::endl;
+  ros::shutdown();
+  exit(0);
+}
+
 class SegmentationNode {
   ros::Publisher ground_pub_;
   ros::Publisher obstacle_pub_;
@@ -51,8 +60,41 @@ public:
 };
 
 int main(int argc, char** argv) {
-  ros::init(argc, argv, "segmenter");
+  ros::init(argc, argv, name_node);
   google::InitGoogleLogging(argv[0]);
+
+  std::vector<int> signals{
+      SIGINT,
+      SIGILL,
+      SIGABRT,
+      SIGFPE,
+      SIGSEGV,
+      SIGTERM,
+      SIGHUP,
+      SIGQUIT,
+      SIGTRAP,
+      SIGKILL,
+      SIGBUS,
+      SIGSYS,
+      SIGPIPE,
+      SIGALRM,
+      SIGURG,
+      SIGSTOP,
+      SIGTSTP,
+      SIGCONT,
+      SIGCHLD,
+      SIGTTIN,
+      SIGTTOU,
+      SIGPOLL,
+      SIGXCPU,
+      SIGXFSZ,
+      SIGVTALRM,
+      SIGPROF
+  };
+
+  for (const auto &sig : signals) {
+    signal(sig, SigHandler);
+  }
 
   ros::NodeHandle nh("~");
 
